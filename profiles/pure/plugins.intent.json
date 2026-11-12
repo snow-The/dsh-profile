@@ -1,0 +1,32 @@
+{
+  "$comment": [
+    "pure profile：只掛宿主自帶的層，不裝任何第三方或自研插件。",
+    "用途：診斷「這是 DSH 的問題還是插件的問題」；升級前的基準；新機器先驗引擎。",
+    "與 profiles/web 共用同一個編譯器（derive-profile.mjs --profile pure）。"
+  ],
+  "profileName": "dsh-profile-pure",
+  "packageManager": "pnpm@10.14.0",
+  "patchReload": "live",
+  "$comment_runtime": [
+    "runtime 是這份 profile 瞄準的宿主世代。pure 沒有外部依賴，所以它同時是「引擎能不能自己跑起來」的基準。"
+  ],
+  "runtime": "0.2.2-rc.1",
+  "hostBundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "@deepseek-ai/dsh-experimental-agent-team-profile",
+    "@deepseek-ai/dsh-experimental-terminal-bundle"
+  ],
+  "npm": {},
+  "github": {},
+  "local": {},
+  "derivedOverridesFrom": [],
+  "buildDeps": [],
+  "aggregates": {},
+  "bundleOrder": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "@deepseek-ai/dsh-experimental-terminal-bundle",
+    "@deepseek-ai/dsh-experimental-agent-team-profile"
+  ]
+}

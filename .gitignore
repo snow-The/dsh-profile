@@ -1,0 +1,27 @@
+# 依赖
+node_modules/
+
+# 本机生成物
+.dsh-market/
+pnpm-lock.yaml
+
+# 凭据与私有文件(绝不入库)
+*.key
+*.pem
+.credentials.yaml
+settings.yaml
+.env
+.env.*
+dsh-ssh.json
+
+# 日志与临时
+*.log
+.DS_Store
+Thumbs.db
+# 提交消息临时文件 —— 用通配覆盖所有变体。
+# 早先只写了 .commit-msg.txt，结果 .git-commit-msg.tmp 被 git add -A 提交了进去；
+# 而当时的"检查"用 Select-String 'commit-msg' 命中了那条不相干的规则，所以没报出来。
+.*commit-msg*
+# 这条规则只挡住了 .commit-msg.* —— 我用 .git-msg.txt 这个名字时它照样被提交了。
+# 模式写得太具体，等于没写：改成「点开头的、名字里带 msg 的 txt」全部挡住。
+.*msg*.txt

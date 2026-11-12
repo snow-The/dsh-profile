@@ -1,0 +1,15 @@
+{
+  "name": "dsh-profile",
+  "private": true,
+  "description": "Single source of truth for a DeepSeek Harness web profile: profiles/web/plugins.intent.json is the only hand-maintained file; package.json and pnpm-workspace.yaml are generated from it. This repo contains ONLY the profile compiler — host deployment, host doctoring and audits live elsewhere.",
+  "scripts": {
+    "derive": "node scripts/derive-profile.mjs --write",
+    "derive:check": "node scripts/derive-profile.mjs",
+    "check": "node scripts/check-profile.mjs",
+    "selftest": "node scripts/check-profile.selftest.mjs && node scripts/derive-profile.selftest.mjs",
+    "test": "node scripts/derive-profile.mjs && node scripts/check-profile.mjs && node scripts/derive-profile.mjs --profile pure && node scripts/check-profile.mjs --profile pure && node scripts/check-profile.selftest.mjs && node scripts/derive-profile.selftest.mjs",
+    "derive:pure": "node scripts/derive-profile.mjs --profile pure --write --out ./profiles/pure",
+    "check:pure": "node scripts/derive-profile.mjs --profile pure && node scripts/check-profile.mjs --profile pure"
+  },
+  "license": "MIT"
+}

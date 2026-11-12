@@ -1,0 +1,158 @@
+{
+  "$comment": [
+    "这是 profile 的【意图】——人只维护这个文件。",
+    "package.json 与 pnpm-workspace.yaml 的 onlyBuiltDependencies 段都由 scripts/derive-profile.mjs 从这里推导生成。",
+    "改插件、改版本、改挂载顺序：只改这里，然后 `node scripts/derive-profile.mjs --write`。",
+    "不要手改生成物：`node scripts/derive-profile.mjs` 会在 CI 里断言两者一致，手改必被拒。",
+    "本仓库只做「意图 → profile 产物」这一件事；宿主体检、部署、审计属于另一条线，不在这里。"
+  ],
+  "profileName": "dsh-profile-web",
+  "packageManager": "pnpm@10.14.0",
+  "patchReload": "live",
+  "$comment_runtime": [
+    "runtime 是这份 profile 瞄准的宿主世代。它不写进产物，只用于推导期的自检：",
+    "凡是能从 npm 元数据判定 peer 的都在 derive 里核对，判定不了的（github:/file: 依赖）留给宿主门禁。"
+  ],
+  "runtime": "0.2.2-rc.1",
+  "$comment_hostBundles": [
+    "由宿主自己提供、不该出现在 dependencies 里的层。",
+    "2026-11-12 实测：宿主 node_modules 里自带 @deepseek-ai/* 套件。",
+    "在 profile 里再装一份 = 同一插件两个副本，宿主升级后 profile 那份会静默滞留旧版本。"
+  ],
+  "hostBundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "@deepseek-ai/dsh-experimental-agent-team-profile",
+    "@deepseek-ai/dsh-experimental-terminal-bundle"
+  ],
+  "$comment_npm": [
+    "npm 上的第三方插件，必须精确钉版本。",
+    "理由：这些包按宿主世代分段发布，而 ^ 与 ~ 对 0.x.y 完全等价（都是 <0.(x+1).0），拦不住补丁级的世代跳变。",
+    "浮动引用会让全新安装在某个发布窗口里被宿主门禁整组拒绝并回滚。",
+    "装官方 bundle 也要钉版本：npm 的 latest dist-tag 可能停在 alpha（terminal bundle 的 latest 是 0.2.1-alpha.2，而引擎是 0.2.2-rc.1）。"
+  ],
+  "npm": {
+    "@mars-sea/dsh-commandcode-provider": "0.17.2",
+    "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager": "0.1.8",
+    "@tt-a1i/archify-dsh": "1.0.0",
+    "dsh-plugin-wallpaper-engine": "1.4.2",
+    "dsh-undo-savepoint": "0.5.0",
+    "dshmarket": "1.73.12"
+  },
+  "$comment_github": [
+    "自研插件一律走 github: 浮動引用，不釘版本 —— 它們的發布節奏跟著倉庫走。",
+    "值寫 owner/repo，需要固定時寫 owner/repo#ref。",
+    "2026-11-12：31 個 @snow-the/* 全部有 remote（新增 8 個：agent-reach/automation/memory/skin-own/ssh/toolbox/we-plus/worklog）。"
+  ],
+  "github": {
+    "@snow-the/dsh-agent-reach": "snow-The/dsh-agent-reach",
+    "@snow-the/dsh-alexlib": "snow-The/dsh-alexlib",
+    "@snow-the/dsh-automation": "snow-The/dsh-automation",
+    "@snow-the/dsh-browser": "snow-The/dsh-browser",
+    "@snow-the/dsh-bundle-core": "snow-The/dsh-bundle-core",
+    "@snow-the/dsh-bundle-dev": "snow-The/dsh-bundle-dev",
+    "@snow-the/dsh-bundle-ingest": "snow-The/dsh-bundle-ingest",
+    "@snow-the/dsh-bundle-integrations": "snow-The/dsh-bundle-integrations",
+    "@snow-the/dsh-bundle-research": "snow-The/dsh-bundle-research",
+    "@snow-the/dsh-busyloop": "snow-The/dsh-busyloop",
+    "@snow-the/dsh-eigenflux": "snow-The/dsh-eigenflux",
+    "@snow-the/dsh-gitkit": "snow-The/dsh-gitkit",
+    "@snow-the/dsh-lib-analyzer": "snow-The/dsh-lib-analyzer",
+    "@snow-the/dsh-memory": "snow-The/dsh-memory",
+    "@snow-the/dsh-orchestrator": "snow-The/dsh-orchestrator",
+    "@snow-the/dsh-plugin-doctor": "snow-The/dsh-plugin-doctor",
+    "@snow-the/dsh-plugin-guide": "snow-The/dsh-plugin-guide",
+    "@snow-the/dsh-plugin-levels": "snow-The/dsh-plugin-levels",
+    "@snow-the/dsh-research-lab": "snow-The/dsh-research-lab",
+    "@snow-the/dsh-search": "snow-The/dsh-search",
+    "@snow-the/dsh-session-bus": "snow-The/dsh-session-bus",
+    "@snow-the/dsh-session-handoff": "snow-The/dsh-session-handoff",
+    "@snow-the/dsh-session-repair": "snow-The/dsh-session-repair",
+    "@snow-the/dsh-skill-pack": "snow-The/dsh-skill-pack",
+    "@snow-the/dsh-skin-own": "snow-The/dsh-skin-own",
+    "@snow-the/dsh-snapshot": "snow-The/dsh-snapshot",
+    "@snow-the/dsh-ssh": "snow-The/dsh-ssh",
+    "@snow-the/dsh-toolbox": "snow-The/dsh-toolbox",
+    "@snow-the/dsh-w8-sandbox": "snow-The/dsh-w8-sandbox",
+    "@snow-the/dsh-we-plus": "snow-The/dsh-we-plus",
+    "@snow-the/dsh-worklog": "snow-The/dsh-worklog",
+    "aegis": "GanyuanRan/Aegis#v2.14.2",
+    "dsh-ark-plan": "snow-The/dsh-ark-plan"
+  },
+  "$comment_derivedOverrides": [
+    "这些包的发布物内部含子包，且子包写成 caret —— 会漂到下一代。",
+    "derive 会去查它某个版本的 dependencies，把其中所有带 ^/~ 的子包钉到同一版本。",
+    "2026-11-12：@linxin666/dsh-web-all 退役，这里清空。空数组是合法状态。"
+  ],
+  "derivedOverridesFrom": [],
+  "$comment_local": [
+    "留空：所有自研插件都已有 GitHub remote，意圖只寫 github:（可攜）。",
+    "線上 profile 用 `--prefer-local` 把 github: 換成機器上的工作副本（file:），這樣未推送的改動不會被回退。",
+    "只有在「沒有 remote」的插件才需要在這裡寫 ~/ 路徑。"
+  ],
+  "local": {},
+  "$comment_buildDeps": [
+    "传递依赖里需要跑构建脚本的原生包；它们不在 dependencies 里，推导不出来。",
+    "2026-11-12：cloudflared/cpu-features/esbuild/node-pty/ssh2/typescript 在 node_modules 与 .pnpm 都不存在（web-all 时代插件的残留），清空。"
+  ],
+  "buildDeps": [],
+  "$comment_aggregates": "聚合包只插入成员的 row，不搬代码；成员仍是独立套件、单独安装。因此成员【只能】出现在这里，不能同时列进 bundleOrder —— 同一个 id 被 bundle 与 profile 两层宣告时，后写入的那层静默胜出。",
+  "aggregates": {
+    "@snow-the/dsh-bundle-core": [
+      "@snow-the/dsh-session-bus",
+      "@snow-the/dsh-snapshot",
+      "@snow-the/dsh-plugin-doctor",
+      "@snow-the/dsh-session-repair"
+    ],
+    "@snow-the/dsh-bundle-dev": [
+      "@snow-the/dsh-gitkit",
+      "@snow-the/dsh-skill-pack",
+      "@snow-the/dsh-plugin-guide"
+    ],
+    "@snow-the/dsh-bundle-ingest": [
+      "@snow-the/dsh-search",
+      "@snow-the/dsh-browser",
+      "@snow-the/dsh-w8-sandbox",
+      "@snow-the/dsh-lib-analyzer"
+    ],
+    "@snow-the/dsh-bundle-integrations": [
+      "@snow-the/dsh-busyloop",
+      "@snow-the/dsh-eigenflux",
+      "@snow-the/dsh-memory",
+      "@snow-the/dsh-toolbox"
+    ],
+    "@snow-the/dsh-bundle-research": [
+      "@snow-the/dsh-research-lab",
+      "@snow-the/dsh-alexlib"
+    ]
+  },
+  "$comment_bundleOrder": "挂载顺序 = 加载顺序。聚合包成员不在这里（见 aggregates）。",
+  "bundleOrder": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "@snow-the/dsh-bundle-core",
+    "aegis",
+    "@snow-the/dsh-bundle-research",
+    "@snow-the/dsh-bundle-ingest",
+    "@snow-the/dsh-bundle-dev",
+    "@snow-the/dsh-bundle-integrations",
+    "@snow-the/dsh-session-handoff",
+    "@snow-the/dsh-ssh",
+    "@snow-the/dsh-automation",
+    "@snow-the/dsh-worklog",
+    "@tt-a1i/archify-dsh",
+    "dsh-undo-savepoint",
+    "dsh-ark-plan",
+    "dshmarket",
+    "@mars-sea/dsh-commandcode-provider",
+    "@deepseek-ai/dsh-experimental-agent-team-profile",
+    "@snow-the/dsh-plugin-levels",
+    "@snow-the/dsh-agent-reach",
+    "@snow-the/dsh-orchestrator",
+    "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager",
+    "dsh-plugin-wallpaper-engine",
+    "@snow-the/dsh-skin-own",
+    "@snow-the/dsh-we-plus",
+    "@deepseek-ai/dsh-experimental-terminal-bundle"
+  ]
+}

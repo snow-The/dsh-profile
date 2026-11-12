@@ -1,0 +1,127 @@
+# ── Web 搜索后端 ─────────────────────────────────────────────────────────────
+# searchProvider 决定 web_search 走谁；本插件的 platform_search 另走自己的免费链
+# （bing/ddg/searxng），两者可以分岔 —— 分岔时症状像「搜索坏了」，其实是路由去了别处。
+#
+# 2026-10-27：searchProvider 被指到 commandcode，web_search 去花对方的搜索额度，
+# 用完即 400 insufficient credits；同期 platform_search 正常。根因不是模型没额度。
+#
+# 为什么这里写 dsh-search 还不够：commandcode 插件的 `webSearch` 开关默认 true，
+# 它会把自己的 provider 选上。它认的「用户显式选择」是 settings 行的 user 成员
+# （row.user.searchProvider），而 patch 层的值只算部署 base —— 没有 user 行时它照样接管。
+# 所以真正的开关在下面 llm-commandcode 条目上：webSearch: false。
+- id: web
+  config:
+    searchProvider: dsh-search
+    fetchProvider: http
+
+# dsh-base 应自带 authorization 服务（dsh-llm-pi-ai 等依赖 ctx.authorization），
+# 但 base patch 漏了 —— 这里用**顶层声明**补上（default export 的 Service 类会被 loader
+# 自动实例化）。原先写成 `- insert:` 包裹形式，2026-10-27 改成顶层行：
+# undo 插件的自愈写出 health.mjs cleanDanglingInserts 会把判定为「悬空 insert 键」的
+# 条目整份删掉再重写，它把这一份写坏过一次 —— 文件只剩单个换行，此后每次启动都报
+# "must be a top-level YAML array"，profile 直接起不来。顶层声明没有可误判的对象。
+- id: authorization
+  name: '@deepseek-ai/dsh-authorization'
+- id: ui-settings-general
+  name: "@deepseek-ai/dsh-client-ui-settings-general"
+  config:
+    welcomeNoticeVersion: 2026-09-28.1
+- id: permission
+  name: "@deepseek-ai/dsh-permission-presets"
+  config:
+    presets:
+      read-only:
+        sandbox: read-only
+        approval: ask
+      workspace-write:
+        sandbox: workspace-write
+        approval: ask
+      danger-full-access:
+        sandbox: danger-full-access
+        approval: never
+    defaultPreset: danger-full-access
+- id: llm-pi-ai
+  name: "@deepseek-ai/dsh-llm-pi-ai"
+  config:
+    providers:
+      deepseek:
+        baseURL: https://ark.cn-beijing.volces.com/api/plan/v3
+        apiKeyEnv: ARK_API_KEY
+        displayName: DeepSeek V4 Flash (ARK-A)
+        api: openai-completions
+        compat:
+          thinkingFormat: deepseek
+          supportsDeveloperRole: false
+      deepseek-coding:
+        displayName: DeepSeek V4 Flash (ARK-C)
+        apiKeyEnv: ARK_CODING_API_KEY
+        api: anthropic-messages
+        baseURL: https://ark.cn-beijing.volces.com/api/coding
+        models:
+          - id: deepseek-v4-flash
+            name: DeepSeek V4 Flash (ARK-C)
+            contextWindow: 1000000
+            maxTokens: 384000
+            reasoningEfforts:
+              off: null
+              minimal: minimal
+              low: low
+              medium: medium
+              high: high
+              xhigh: xhigh
+              max: max
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: commandcode
+    model: deepseek/deepseek-v4.1-flash
+    reasoningEffort: max
+- id: ui-theme
+  name: "@deepseek-ai/dsh-client-ui-theme"
+  config:
+    # 2026-11-07：light → dark。琉璃（summer-liquid-glass）是 **dark-only** 的主題
+    # （它自己的 skin.css 檔頭就寫著 "Dark-only: the same deep-night palette applies under
+    # both base modes"），而壁紙引擎承載的是一張**明亮**的夏祭照片。light 模式下文字是深色、
+    # 背景是亮圖 → 「很多字都看不到」。底色必須是 dark，再由壁紙引擎壓暗。
+    preference: dark
+- id: llm-commandcode
+  name: "@mars-sea/dsh-commandcode-provider"
+  config:
+    apiKeyEnv: COMMANDCODE_API_KEY
+    visibleModels:
+      - deepseek/deepseek-v4.1-flash
+      - meta/muse-spark-1.3-contributor
+    modelVisibility: {}
+    webSearch: false
+    accounts:
+      - label: 账户 2
+        apiKeyEnv: COMMANDCODE_API_KEY_2
+      - label: 账户 3
+        apiKeyEnv: COMMANDCODE_API_KEY_3
+    credentialCleanupRefs: []
+    accountEnrollmentTasks: []
+    modelAccountRules: []
+    activeAccount: COMMANDCODE_API_KEY_2
+- id: agent-preset-registry
+  name: "@deepseek-ai/dsh-agent-preset-registry"
+  config:
+    default: standard
+    selectedDefault: cordis
+# ── SSH 面板（2026-10-03 修）──────────────────────────────
+# @linxin666/dsh-web-all 把 web-ui-ssh 列為 opt-in，bundle 自己的 patch 設
+# disabled: true；啟用要在使用者層覆寫。bundles 先套用、本檔後套用，所以這裡會蓋過去。
+# 症狀：外掛更新後 SSH 面板從 GUI 消失（外掛仍裝著、~/.dsh/dsh-ssh.json 的主機清單也還在）。
+- id: skin-own
+  disabled: true
+# 我自己的 @snow-the/dsh-skin-own 試了三種寫法都失敗（診斷留著，別重踩）：
+#   ① 伺服器端 index 注入：<link> 確實在頁面裡（排在 app 樣式表之後），畫面不變 →
+#      app 掛載後又寫了自己的樣式，後寫入者勝。
+#   ② client bundle + apply()：模組確實被組成並送到瀏覽器（200 / 2779 bytes，內容含我們的 id），
+#      但 marker 從未出現在執行期 DOM。
+#   ③ 同上再加 factory 時就掛 + immediately: true：仍不出現。
+# 素材與壁紙引擎那邊的東西都留著，隨時可以再切。
+
+# 原始项目的那一行（id `pet` 由 @linxin666/dsh-pet 自己的 cordis.patch.yml 声明）。
+# 这里只给 config、不写 name —— 写 name 就是第二份声明，会和包的声明撞 id（doctor_patch 会报
+# duplicate-declaration，加载器只留一个 entry 并以后来的覆盖）。
+# 作用：把上面那一行（被禁用的聚合副本）里存的坐标搬过来，免得换成原始包之后鲸鱼跳回默认位置。
