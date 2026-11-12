@@ -1,0 +1,5 @@
+# 生成物（package.json / pnpm-workspace.yaml / cordis.patch.yml）是字节级
+# 比对的对象。Windows 上默认 core.autocrlf=true，clone 会把 LF 换成 CRLF，
+# 于是 derive-profile 的「生成物 == 意图推导结果」断言在全新克隆上假红
+# （实测：`当前: "{\r"` / `应为: "{"`）。统一锁 LF。
+* text=auto eol=lf
