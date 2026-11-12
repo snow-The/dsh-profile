@@ -87,3 +87,30 @@ node scripts/derive-profile.mjs --write --prefer-local --out "$env:USERPROFILE\.
 ```
 
 `--prefer-local` 讓自研插件用本地工作副本（`file:`），避免把未推送的改動回退成 GitHub 上的舊版。
+
+## 部署到一台新機器（實測流程）
+
+```powershell
+# 1. 引擎（版本見 intent 的 runtime 欄位，別讓 latest dist-tag 決定）
+npx @deepseek-ai/dsh@0.2.2-rc.1 --version
+# 2. profile
+git clone https://github.com/snow-The/dsh-profile; cd dsh-profile/profiles/web
+pnpm install
+# 3. 啟動（profile 名是位置參數）
+dsh --profile web
+```
+
+實測（2026-11-12）：全新 clone + **空 pnpm store** → 78 個包 / 16 秒 / 無錯誤 →
+埠在監聽、stderr 空。空 store 這一步是關鍵：本地會複用快取裡「已準備」的副本，
+把下面兩個坑全部藏起來。
+
+## 發佈 git 依賴的兩個坑（都實測踩過，且本機看不出來）
+
+1. **包裡不能有 `prepare`**：pnpm 對 git 依賴會先在臨時目錄跑 `pnpm install`，
+   再跑 `prepare`。`prepare: pnpm build` 在那個只有原始碼的目錄裡必失敗，
+   報 `ERR_PNPM_PREPARE_PACKAGE`，整個 profile 裝不下去 —— 而本機因為 store
+   裡有早先準備過的副本，`pnpm install` 直接複用，症狀完全消失。
+2. **建置產物必須入庫**：`main` 指向 `dist/index.js`，但 `.gitignore` 裡寫著
+   `dist/` —— 發出去的倉庫就沒有入口檔。本機跑過 `build` 所以看不出來，
+   新機器裝完是一個空殼。
+
