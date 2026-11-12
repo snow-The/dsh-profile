@@ -88,6 +88,10 @@ node scripts/derive-profile.mjs --write --prefer-local --out "$env:USERPROFILE\.
 
 `--prefer-local` 讓自研插件用本地工作副本（`file:`），避免把未推送的改動回退成 GitHub 上的舊版。
 
+`--out` 除了兩個生成物，也會把 `cordis.patch.yml` 同步到目標目錄。它不是推導物（手維護），
+但屬於 profile 目錄的一部分：少了它，authorization、權限預設、模型路由、主題整層都不在，
+開機時是一堆看起來「插件沒掛上」的症狀。
+
 ## 部署到一台新機器（實測流程）
 
 ```powershell

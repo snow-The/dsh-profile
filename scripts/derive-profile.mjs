@@ -358,6 +358,21 @@ if (OUT_DIR) {
   }
   fs.writeFileSync(outPkg, newPkg, 'utf8');
   fs.writeFileSync(outWs, rendered, 'utf8');
+  // cordis.patch.yml 不是推导物（手维护），但它是 profile 目录的一部分。
+  // 只写 package.json / workspace 的话，--out 出来的 profile 会缺整个 patch 层
+  // （authorization、权限预设、模型路由、主题…），开机少一堆装配 —— 2026-11-12 在笔电上实测踩到。
+  const srcPatch = path.join(PROFILE, 'cordis.patch.yml');
+  if (fs.existsSync(srcPatch)) {
+    const dstPatch = path.join(OUT_DIR, 'cordis.patch.yml');
+    const want = fs.readFileSync(srcPatch, 'utf8');
+    const have = fs.existsSync(dstPatch) ? fs.readFileSync(dstPatch, 'utf8') : null;
+    if (have !== want) {
+      fs.writeFileSync(dstPatch, want, 'utf8');
+      console.log('  ✓ cordis.patch.yml 已同步到目标目录');
+    }
+  } else {
+    console.log('  ! 模板 ' + PROFILE + ' 里没有 cordis.patch.yml：目标目录不会带 patch 层');
+  }
   console.log('  ✓ 已写入 ' + OUT_DIR);
   process.exit(0);
 }
