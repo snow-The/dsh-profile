@@ -13,7 +13,7 @@
     "runtime 是这份 profile 瞄准的宿主世代。它不写进产物，只用于推导期的自检：",
     "凡是能从 npm 元数据判定 peer 的都在 derive 里核对，判定不了的（github:/file: 依赖）留给宿主门禁。"
   ],
-  "runtime": "0.2.2-rc.1",
+  "runtime": "0.2.2-rc.3",
   "$comment_hostBundles": [
     "由宿主自己提供、不该出现在 dependencies 里的层。",
     "2026-11-12 实测：宿主 node_modules 里自带 @deepseek-ai/* 套件。",
@@ -22,8 +22,12 @@
   "hostBundles": [
     "@deepseek-ai/dsh-base",
     "@deepseek-ai/dsh-web-app",
-    "@deepseek-ai/dsh-experimental-agent-team-profile",
     "@deepseek-ai/dsh-experimental-terminal-bundle"
+  ],
+  "$comment_agentTeam": [
+    "2026-11-14：dsh-experimental-agent-team-profile 从 0.2.2-rc.2 起不再随引擎发布。",
+    "官方设计改成「teammates are subagents」：Team 只提供共享任务板，身份用 Session id，没有 roster/成员名。",
+    "所以它从 hostBundles 移到 npm（精确钉版本），并单独进 bundleOrder。"
   ],
   "$comment_npm": [
     "npm 上的第三方插件，必须精确钉版本。",
@@ -32,6 +36,8 @@
     "装官方 bundle 也要钉版本：npm 的 latest dist-tag 可能停在 alpha（terminal bundle 的 latest 是 0.2.1-alpha.2，而引擎是 0.2.2-rc.1）。"
   ],
   "npm": {
+    "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-agent-team": "0.2.2-rc.3",
     "@mars-sea/dsh-commandcode-provider": "0.17.2",
     "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager": "0.1.8",
     "@tt-a1i/archify-dsh": "1.0.0",
@@ -145,7 +151,6 @@
     "dsh-ark-plan",
     "dshmarket",
     "@mars-sea/dsh-commandcode-provider",
-    "@deepseek-ai/dsh-experimental-agent-team-profile",
     "@snow-the/dsh-plugin-levels",
     "@snow-the/dsh-agent-reach",
     "@snow-the/dsh-orchestrator",

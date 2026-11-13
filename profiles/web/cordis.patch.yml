@@ -125,3 +125,11 @@
 # 这里只给 config、不写 name —— 写 name 就是第二份声明，会和包的声明撞 id（doctor_patch 会报
 # duplicate-declaration，加载器只留一个 entry 并以后来的覆盖）。
 # 作用：把上面那一行（被禁用的聚合副本）里存的坐标搬过来，免得换成原始包之后鲸鱼跳回默认位置。
+# ── Agent Team（0.2.2-rc.2 起从引擎拆出，改成普通插件）──────────────
+# 2026-11-14 实测：@deepseek-ai/dsh-agent-team 的 package.json **没有 dsh.bundle**，
+# 放进 dsh.profile.bundles 会被 loader 跳过（"declares no dsh.bundle"）。
+# 它是插件 + 服务，要在 patch 层用 name 声明；任务工具由 dsh-tool-agent-team 提供。
+- id: agent-team
+  name: "@deepseek-ai/dsh-agent-team"
+- id: tool-agent-team
+  name: "@deepseek-ai/dsh-tool-agent-team"
