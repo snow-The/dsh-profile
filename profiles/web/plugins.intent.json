@@ -102,7 +102,10 @@
   "$comment_local": [
     "留空：所有自研插件都已有 GitHub remote，意圖只寫 github:（可攜）。",
     "線上 profile 用 `--prefer-local` 把 github: 換成機器上的工作副本（file:），這樣未推送的改動不會被回退。",
-    "只有在「沒有 remote」的插件才需要在這裡寫 ~/ 路徑。"
+    "只有在「沒有 remote」的插件才需要在這裡寫 ~/ 路徑。",
+    "2026-11-14：本機有兩個沒有 remote 的本地包，只存在於線上 profile，不進意圖 ——",
+    "  @snow-the/dsh-video（link:~/source/repos/dsh-video）與 @local/dsh-cache-guard（link:~/source/repos/dsh-cache-guard）。",
+    "  它們是機器專屬的，寫進意圖會讓別台機器 derive 出斷鏈的 file: 依賴。"
   ],
   "local": {},
   "$comment_buildDeps": [
