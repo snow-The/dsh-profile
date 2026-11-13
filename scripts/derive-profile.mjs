@@ -33,7 +33,10 @@
  * 断言（任一不满足即失败，不落盘）：
  *   · hostBundles 与 dependencies 不能有交集（否则同一插件两个副本）
  *   · bundleOrder 里每一条要么是宿主层、要么在 dependencies 里有来源
- *   · 每个 dependency 都必须出现在 bundleOrder 里（装了却不挂载 = 纯负重）
+ *   · 每个 dependency 必须挂在三处之一：bundleOrder、聚合包成员、patchPlugins
+ *     （装了却不挂载 = 纯负重）
+ *   · patchPlugins 里每一条都必须在 cordis.patch.yml 里有 name 行，且不得同时
+ *     出现在 bundleOrder/聚合包里（非 bundle 包进 bundles 会被 loader 静默跳过）
  *   · bundleOrder 无重复
  *   · npm 版本必须是精确版本，不能是范围
  *   · derivedOverridesFrom 里每个包必须是 npm 依赖
@@ -85,7 +88,7 @@ try {
 // 以 $comment 开头的键是给人看的文档，不参与推导
 const forReal = Object.keys(intent).filter((k) => !k.startsWith('$'));
 const KNOWN = new Set(['profileName', 'packageManager', 'patchReload', 'runtime', 'hostBundles',
-  'npm', 'github', 'local', 'derivedOverridesFrom', 'buildDeps', 'bundleOrder', 'aggregates']);
+  'npm', 'github', 'local', 'derivedOverridesFrom', 'buildDeps', 'bundleOrder', 'aggregates', 'patchPlugins']);
 for (const k of forReal) if (!KNOWN.has(k)) fail(`意图里有未知字段 "${k}"（拼错了？）`);
 
 const npmDeps = intent.npm ?? {};
@@ -95,6 +98,11 @@ const hostBundles = intent.hostBundles ?? [];
 const buildDeps = intent.buildDeps ?? [];
 const bundleOrder = intent.bundleOrder ?? [];
 const aggregates = intent.aggregates ?? {};
+// patchPlugins：用 cordis.patch.yml 的 name 行挂载的插件。它们不是 bundle ——
+// 官方 @deepseek-ai/dsh-agent-team 的 package.json 没有 dsh.bundle 字段，写进
+// dsh.profile.bundles 会被 loader 以「declares no dsh.bundle」静默跳过。
+// 所以它们的「装了且挂载」证明只能来自 patch 文件本身，不能来自 bundleOrder。
+const patchPlugins = intent.patchPlugins ?? [];
 
 /**
  * local 依赖的目录解析。~ 展开成家目录是必须的：
@@ -204,8 +212,23 @@ for (const b of bundleOrder) {
   if (hostSet.has(b)) continue;
   if (!Object.hasOwn(deps, b)) fail(`bundleOrder 里的 ${b} 既不是宿主层、也不在 dependencies 里有来源（新机器会加载失败）`);
 }
+// patch 层挂载的插件：唯一的「装了且挂载」证据是 cordis.patch.yml 里的 name 行，
+// 所以这里校验的是文件内容，而不是 bundleOrder。
+for (const p of patchPlugins) {
+  if (bundleOrder.includes(p) || memberOf.has(p)) fail(`${p} 同时是 patchPlugins 与 bundleOrder/聚合包成员 —— 它是插件不是 bundle，两层宣告会静默丢一个`);
+  if (!Object.hasOwn(deps, p) && !hostSet.has(p)) fail(`patchPlugins 里的 ${p} 既不是依赖也不是宿主层 —— 声明了却不装，启动时才炸`);
+}
+if (patchPlugins.length > 0) {
+  const patchFile = path.join(PROFILE, 'cordis.patch.yml');
+  let patchText = '';
+  try { patchText = fs.readFileSync(patchFile, 'utf8'); } catch (e) { fail(`有 patchPlugins 却读不到 ${patchFile}: ${e.message}`); }
+  for (const p of patchPlugins) {
+    if (patchText && !patchText.includes(p)) fail(`patchPlugins 里的 ${p} 在 cordis.patch.yml 找不到 —— 装了却从不挂载`);
+  }
+}
 for (const d of Object.keys(deps)) {
-  if (!bundleOrder.includes(d) && !memberOf.has(d)) fail(`依赖 ${d} 不在 bundleOrder 里、也不是任何聚合包的成员 —— 装了却从不挂载，是纯负重`);
+  if (bundleOrder.includes(d) || memberOf.has(d) || patchPlugins.includes(d)) continue;
+  fail(`依赖 ${d} 不在 bundleOrder 里、不是任何聚合包的成员、也不在 patchPlugins 里 —— 装了却从不挂载，是纯负重`);
 }
 
 for (const p of intent.derivedOverridesFrom ?? []) {

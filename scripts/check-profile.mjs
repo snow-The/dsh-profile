@@ -66,10 +66,17 @@ check('1', '生成的 dependencies 與意圖完全一致（不多不少）', () 
   return `${got.size} 個依賴`
 })
 
-check('2', '每個依賴都被掛載（bundleOrder 或聚合包成員）', () => {
-  const unmounted = [...intended].filter((n) => !bundles.includes(n) && !members.has(n))
+check('2', '每個依賴都被掛載（bundleOrder／聚合包成員／patch 插件）', () => {
+  const patchPlugins = intent.patchPlugins ?? []
+  const patchText = fs.existsSync(PATCH) ? fs.readFileSync(PATCH, 'utf8') : ''
+  const unmounted = [...intended].filter((n) => !bundles.includes(n) && !members.has(n) && !patchPlugins.includes(n))
   if (unmounted.length) throw new Error(`裝了卻沒掛: ${unmounted.join(', ')}`)
-  return `${intended.size} 個依賴全部有歸屬`
+  // patch 插件不是 bundle，唯一掛載證據是 patch 檔裡的 name 行
+  const ghost = patchPlugins.filter((n) => !patchText.includes(n))
+  if (ghost.length) throw new Error(`patchPlugins 宣稱掛載，但 cordis.patch.yml 找不到: ${ghost.join(', ')}`)
+  const both = patchPlugins.filter((n) => bundles.includes(n) || members.has(n))
+  if (both.length) throw new Error(`patch 插件不得同時列進 bundleOrder/聚合包（loader 會靜默跳過）: ${both.join(', ')}`)
+  return `${intended.size} 個依賴全部有歸屬（${patchPlugins.length} 個走 patch）`
 })
 
 check('3', 'bundleOrder 的每一條都有來源（宿主層／依賴／聚合包）', () => {

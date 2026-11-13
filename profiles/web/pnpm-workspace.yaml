@@ -45,9 +45,7 @@ onlyBuiltDependencies:
   - "@snow-the/dsh-w8-sandbox"
   - "@snow-the/dsh-we-plus"
   - "@snow-the/dsh-worklog"
-  - "aegis"
   - "dsh-ark-plan"
   # --- npm deps that declare a build script ---
   - "@mars-sea/dsh-commandcode-provider"
-  - "dshmarket"
   # --- transitive native/tooling packages declared in plugins.intent.json buildDeps ---

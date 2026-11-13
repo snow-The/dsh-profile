@@ -3,8 +3,9 @@
   "private": true,
   "packageManager": "pnpm@10.14.0",
   "dependencies": {
+    "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3",
+    "@deepseek-ai/dsh-tool-agent-team": "0.2.2-rc.3",
     "@mars-sea/dsh-commandcode-provider": "0.17.2",
-    "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager": "0.1.8",
     "@snow-the/dsh-agent-reach": "github:snow-The/dsh-agent-reach",
     "@snow-the/dsh-alexlib": "github:snow-The/dsh-alexlib",
     "@snow-the/dsh-automation": "github:snow-The/dsh-automation",
@@ -37,11 +38,8 @@
     "@snow-the/dsh-we-plus": "github:snow-The/dsh-we-plus",
     "@snow-the/dsh-worklog": "github:snow-The/dsh-worklog",
     "@tt-a1i/archify-dsh": "1.0.0",
-    "aegis": "github:GanyuanRan/Aegis#v2.14.2",
     "dsh-ark-plan": "github:snow-The/dsh-ark-plan",
-    "dsh-plugin-wallpaper-engine": "1.4.2",
-    "dsh-undo-savepoint": "0.5.0",
-    "dshmarket": "1.73.12"
+    "dsh-plugin-wallpaper-engine": "1.4.2"
   },
   "dsh": {
     "profile": {
@@ -49,7 +47,6 @@
         "@deepseek-ai/dsh-base",
         "@deepseek-ai/dsh-web-app",
         "@snow-the/dsh-bundle-core",
-        "aegis",
         "@snow-the/dsh-bundle-research",
         "@snow-the/dsh-bundle-ingest",
         "@snow-the/dsh-bundle-dev",
@@ -59,15 +56,11 @@
         "@snow-the/dsh-automation",
         "@snow-the/dsh-worklog",
         "@tt-a1i/archify-dsh",
-        "dsh-undo-savepoint",
         "dsh-ark-plan",
-        "dshmarket",
         "@mars-sea/dsh-commandcode-provider",
-        "@deepseek-ai/dsh-experimental-agent-team-profile",
         "@snow-the/dsh-plugin-levels",
         "@snow-the/dsh-agent-reach",
         "@snow-the/dsh-orchestrator",
-        "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager",
         "dsh-plugin-wallpaper-engine",
         "@snow-the/dsh-skin-own",
         "@snow-the/dsh-we-plus",

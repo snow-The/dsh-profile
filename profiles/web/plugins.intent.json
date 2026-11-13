@@ -27,7 +27,10 @@
   "$comment_agentTeam": [
     "2026-11-14：dsh-experimental-agent-team-profile 从 0.2.2-rc.2 起不再随引擎发布。",
     "官方设计改成「teammates are subagents」：Team 只提供共享任务板，身份用 Session id，没有 roster/成员名。",
-    "所以它从 hostBundles 移到 npm（精确钉版本），并单独进 bundleOrder。"
+    "所以它从 hostBundles 移到 npm（精确钉版本）。",
+    "注意：它不是 bundle —— package.json 没有 dsh.bundle 字段，写进 bundleOrder 会被 loader",
+    "以「declares no dsh.bundle」静默跳过（实测 0.2.2-rc.3）。它只能作为 patch 插件挂在",
+    "cordis.patch.yml 的 name 行上，因此列在 patchPlugins 里而不是 bundleOrder。"
   ],
   "$comment_npm": [
     "npm 上的第三方插件，必须精确钉版本。",
@@ -39,12 +42,18 @@
     "@deepseek-ai/dsh-agent-team": "0.2.2-rc.3",
     "@deepseek-ai/dsh-tool-agent-team": "0.2.2-rc.3",
     "@mars-sea/dsh-commandcode-provider": "0.17.2",
-    "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager": "0.1.8",
     "@tt-a1i/archify-dsh": "1.0.0",
-    "dsh-plugin-wallpaper-engine": "1.4.2",
-    "dsh-undo-savepoint": "0.5.0",
-    "dshmarket": "1.73.12"
+    "dsh-plugin-wallpaper-engine": "1.4.2"
   },
+  "$comment_patchPlugins": [
+    "用 cordis.patch.yml 的 - id/name 行挂载的插件（不是 bundle，不进 dsh.profile.bundles）。",
+    "derive 脚本会来 cordis.patch.yml 里核对每个包名确实有一行 name 宣告，",
+    "这样「装了却从不挂载」照样能被拦住 —— 只是证据来自 patch 文件而不是 bundleOrder。"
+  ],
+  "patchPlugins": [
+    "@deepseek-ai/dsh-agent-team",
+    "@deepseek-ai/dsh-tool-agent-team"
+  ],
   "$comment_github": [
     "自研插件一律走 github: 浮動引用，不釘版本 —— 它們的發布節奏跟著倉庫走。",
     "值寫 owner/repo，需要固定時寫 owner/repo#ref。",
@@ -82,7 +91,6 @@
     "@snow-the/dsh-w8-sandbox": "snow-The/dsh-w8-sandbox",
     "@snow-the/dsh-we-plus": "snow-The/dsh-we-plus",
     "@snow-the/dsh-worklog": "snow-The/dsh-worklog",
-    "aegis": "GanyuanRan/Aegis#v2.14.2",
     "dsh-ark-plan": "snow-The/dsh-ark-plan"
   },
   "$comment_derivedOverrides": [
@@ -137,7 +145,6 @@
     "@deepseek-ai/dsh-base",
     "@deepseek-ai/dsh-web-app",
     "@snow-the/dsh-bundle-core",
-    "aegis",
     "@snow-the/dsh-bundle-research",
     "@snow-the/dsh-bundle-ingest",
     "@snow-the/dsh-bundle-dev",
@@ -147,14 +154,11 @@
     "@snow-the/dsh-automation",
     "@snow-the/dsh-worklog",
     "@tt-a1i/archify-dsh",
-    "dsh-undo-savepoint",
     "dsh-ark-plan",
-    "dshmarket",
     "@mars-sea/dsh-commandcode-provider",
     "@snow-the/dsh-plugin-levels",
     "@snow-the/dsh-agent-reach",
     "@snow-the/dsh-orchestrator",
-    "@smalltailqwq/dsh-client-ui-skin-deep-whale-manager",
     "dsh-plugin-wallpaper-engine",
     "@snow-the/dsh-skin-own",
     "@snow-the/dsh-we-plus",
